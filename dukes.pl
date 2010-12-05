@@ -1,75 +1,74 @@
-%-------- Scoring a hand
+%-------- Scoring a deck
 
 % Now that we have gone through all the cards, we can total up the Dukes
-score([], DukesInHand, DuchiesInHand, Score) :-
-    Score is DukesInHand*DuchiesInHand.
+score([], DukesInDeck, DuchiesInDeck, Score) :-
+    Score is DukesInDeck*DuchiesInDeck.
 
-score([duchy|Rest], DukesInHand, DuchiesInHand, Score) :-
-    Y is DuchiesInHand+1,
-    score(Rest, DukesInHand, Y, X),
+score([duchy|Rest], DukesInDeck, DuchiesInDeck, Score) :-
+    Y is DuchiesInDeck+1,
+    score(Rest, DukesInDeck, Y, X),
     Score is 3+X.
 
-score([duke|Rest], DukesInHand, DuchiesInHand, Score) :-
-    Y is DukesInHand+1,
-    score(Rest, Y, DuchiesInHand, Score).
+score([duke|Rest], DukesInDeck, DuchiesInDeck, Score) :-
+    Y is DukesInDeck+1,
+    score(Rest, Y, DuchiesInDeck, Score).
     
-score(Hand, Score) :-
-  score(Hand, 0, 0, Score).
+score(Deck, Score) :-
+  score(Deck, 0, 0, Score).
 
-%--------- Building up all possible hands
+%--------- Building up all possible decks
 
-play(0, _, Hand, Hand) :- !.
+play(0, _, Deck, Deck) :- !.
 
-play(_, 0, Hand, Hand) :- !.
+play(_, 0, Deck, Deck) :- !.
 
 % take a duchy
-play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand) :-
+play(DukesRemaining, DuchiesRemaining, Deck, FinishedDeck) :-
     X is DuchiesRemaining-1,
-    append([duchy], Hand, NewHand),
-    play(DukesRemaining, X, NewHand, FinishedHand).
+    append([duchy], Deck, NewDeck),
+    play(DukesRemaining, X, NewDeck, FinishedDeck).
 
 % take a duke
-play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand) :-
+play(DukesRemaining, DuchiesRemaining, Deck, FinishedDeck) :-
     X is DukesRemaining-1,
-    append([duke], Hand, NewHand),
-    play(X, DuchiesRemaining, NewHand, FinishedHand).
+    append([duke], Deck, NewDeck),
+    play(X, DuchiesRemaining, NewDeck, FinishedDeck).
 
-play(DukesRemaining, DuchiesRemaining, Hand) :-
-    play(DukesRemaining, DuchiesRemaining, [], Hand).
+play(DukesRemaining, DuchiesRemaining, Deck) :-
+    play(DukesRemaining, DuchiesRemaining, [], Deck).
 
 %---------- Main entry for program
 
 best_play(DukesRemaining, DuchiesRemaining) :-
-    findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
-    %write(SetOfHands),nl,
-    max_hand(SetOfHands, BestHand),
-    reverse(BestHand, PrintableBestHand),
-    write('Best Hand: '),write(PrintableBestHand),nl,
-    score_by_round(BestHand, Scores),
+    findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfDecks),
+    %write(SetOfDecks),nl,
+    max_deck(SetOfDecks, BestDeck),
+    reverse(BestDeck, PrintableBestDeck),
+    write('Best Deck: '),write(PrintableBestDeck),nl,
+    score_by_round(BestDeck, Scores),
     reverse(Scores, PrintableScores),
     write('Score by Round: '),write(PrintableScores),nl.
     
-%---------- The algorithm to find the best ordered hand out of all hands
+%---------- The algorithm to find the best ordered deck out of all decks
 
-max_hand(SetOfSets, Set) :-
-    max_hand(SetOfSets, 1, Set).
+max_deck(SetOfSets, Set) :-
+    max_deck(SetOfSets, 1, Set).
     
-max_hand([Set|[]], _, Set) :- !.
+max_deck([Set|[]], _, Set) :- !.
 
-max_hand([FirstSet|_], N, FirstSet) :-
+max_deck([FirstSet|_], N, FirstSet) :-
     length(FirstSet, L),
     N > L.
         
-max_hand(SetOfSets, N, Set) :-
+max_deck(SetOfSets, N, Set) :-
     max_n(SetOfSets, N, Max), 
     write(N),write(' -> '),write(Max),
-    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
-
+    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN),
     write(', '), length(SetOfSetsWithMaxAtN, L), write(L),nl,
     M is N+1,
-    max_hand(SetOfSetsWithMaxAtN, M, Set).
+    max_deck(SetOfSetsWithMaxAtN, M, Set).
 
-%---------- Determine the highest scoring hand at a giving round (n) for the given hands
+%---------- Determine the highest scoring deck at a giving round (n) for the given decks
 
 max_n([Set|[]], N, Max) :-
     nth_score(N, Set, Max),
@@ -85,7 +84,7 @@ max_n([Set|RemainingSets], N, Max) :-
 max_n([A|_], N, Max) :-
     nth_score(N, A, Max). % if we got this far, then this is the new max
     
-%----------- Find all the hands that have a score of Max at round N
+%----------- Find all the decks that have a score of Max at round N
 
 sets_with_n_of([], _, _, []) :- !.
     
@@ -116,17 +115,17 @@ tail([_|R], N, M, Tail) :-
     Mpp is M+1,
     tail(R, N, Mpp, Tail).
 
-%------------ Recursively score each round of a given hand
+%------------ Recursively score each round of a given deck
     
-score_by_round(Hand, Scores) :-
-    score(Hand, Score),
-    score_by_round_recursive(Hand, RemainingScores),
+score_by_round(Deck, Scores) :-
+    score(Deck, Score),
+    score_by_round_recursive(Deck, RemainingScores),
     append([Score], RemainingScores, Scores).
 
 score_by_round_recursive([_|[]], []) :- !.
 
-score_by_round_recursive([_|Hand], Scores) :-
-    score(Hand, Score),
-    score_by_round_recursive(Hand, RemainingScores),
+score_by_round_recursive([_|Deck], Scores) :-
+    score(Deck, Score),
+    score_by_round_recursive(Deck, RemainingScores),
     append([Score], RemainingScores, Scores).
     
