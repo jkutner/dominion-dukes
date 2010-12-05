@@ -39,9 +39,10 @@ best_play(DukesRemaining, DuchiesRemaining) :-
 	%write(SetOfHands),nl,
 	max_set(SetOfHands, BestHand),
 	reverse(BestHand, PrintableBestHand),
-	write('Best Hand: '),write(PrintableBestHand),nl.
-	%score_by_round(PrintableBestHand, Scores)
-	%write('Score by Round: '),write(Scores),nl.
+	write('Best Hand: '),write(PrintableBestHand),nl,
+	score_by_round(BestHand, Scores),
+	reverse(Scores, PrintableScores),
+	write('Score by Round: '),write(PrintableScores),nl.
 	
 max_set(SetOfSets, Set) :-
 	max_set(SetOfSets, 1, Set).
@@ -52,8 +53,8 @@ max_set(SetOfSets, _, Set) :-
 	!.
 		
 max_set(SetOfSets, N, Set) :-
-	max_n(SetOfSets, N, Max), %find the max Nth value of a set in setofsets and call it Max
-	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), %find all sets in setofsets that have Max as the Nth value
+	max_n(SetOfSets, N, Max), 
+	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
 	M is N+1,
 	max_set(SetOfSetsWithMaxAtN, M, Set).
 
@@ -97,3 +98,15 @@ tail(Set, N, Set) :-
 
 tail([_|R], N, Tail) :-	
 	tail(R, N, Tail).
+	
+score_by_round(Hand, Scores) :-
+	score(Hand, Score),
+	score_by_round_recursive(Hand, RemainingScores),
+	append([Score], RemainingScores, Scores).
+
+score_by_round_recursive([_|[]], []) :- !.
+
+score_by_round_recursive([_|Hand], Scores) :-
+	score(Hand, Score),
+	score_by_round_recursive(Hand, RemainingScores),
+	append([Score], RemainingScores, Scores).
