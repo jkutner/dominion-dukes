@@ -42,7 +42,7 @@ play(DukesRemaining, DuchiesRemaining, Hand) :-
 best_play(DukesRemaining, DuchiesRemaining) :-
     findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
     %write(SetOfHands),nl,
-    max_set(SetOfHands, BestHand),
+    max_hand(SetOfHands, BestHand),
     reverse(BestHand, PrintableBestHand),
     write('Best Hand: '),write(PrintableBestHand),nl,
     score_by_round(BestHand, Scores),
@@ -51,16 +51,16 @@ best_play(DukesRemaining, DuchiesRemaining) :-
     
 %---------- The algorithm to find the best ordered hand out of all hands
 
-max_set(SetOfSets, Set) :-
-    max_set(SetOfSets, 1, Set).
+max_hand(SetOfSets, Set) :-
+    max_hand(SetOfSets, 1, Set).
     
-max_set([Set|[]], _, Set) :- !.
+max_hand([Set|[]], _, Set) :- !.
         
-max_set(SetOfSets, N, Set) :-
+max_hand(SetOfSets, N, Set) :-
     max_n(SetOfSets, N, Max), 
     sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
     M is N+1,
-    max_set(SetOfSetsWithMaxAtN, M, Set).
+    max_hand(SetOfSetsWithMaxAtN, M, Set).
 
 %---------- Determine the highest scoring hand at a giving round (n) for the given hands
 
