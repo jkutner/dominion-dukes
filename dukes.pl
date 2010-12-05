@@ -55,20 +55,24 @@ max_hand(SetOfSets, Set) :-
     max_hand(SetOfSets, 1, Set).
     
 max_hand([Set|[]], _, Set) :- !.
+
+max_hand([FirstSet|_], N, FirstSet) :-
+    length(FirstSet, L),
+    N > L.
         
 max_hand(SetOfSets, N, Set) :-
     max_n(SetOfSets, N, Max), 
+    write(N),write(' -> '),write(Max),
     sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
+
+    write(', '), length(SetOfSetsWithMaxAtN, L), write(L),nl,
     M is N+1,
     max_hand(SetOfSetsWithMaxAtN, M, Set).
 
 %---------- Determine the highest scoring hand at a giving round (n) for the given hands
 
-max_n([Set|RemainingSets], N, Max) :-
-    length(RemainingSets, 0),
-    nth_score(N, Set, Max), 
-    tail(Set, N, Tail),
-    score(Tail, Max),
+max_n([Set|[]], N, Max) :-
+    nth_score(N, Set, Max),
     !.
 
 max_n([Set|RemainingSets], N, Max) :-
@@ -94,19 +98,23 @@ sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
     sets_with_n_of(SetOfSets, N, Max, R),
     append([A], R, SetOfSetsWithMaxAtN).
     
+%----------- Score a deck at a certain round
+
 nth_score(N, Set, Score) :-
     tail(Set, N, Tail),
     score(Tail, Score).
     
 %----------- Returns all N elements of a Set after and including the Nth element
 
-tail(Set, N, Set) :-
-    length(Set, L),
-    L =< N,
-    !.
+tail(In, N, Out) :-
+    tail(In, N, 1, Out).
 
-tail([_|R], N, Tail) :- 
-    tail(R, N, Tail).
+tail(Set, N, M, Set) :-
+    M = N, !.
+
+tail([_|R], N, M, Tail) :- 
+    Mpp is M+1,
+    tail(R, N, Mpp, Tail).
 
 %------------ Recursively score each round of a given hand
     
@@ -121,3 +129,4 @@ score_by_round_recursive([_|Hand], Scores) :-
     score(Hand, Score),
     score_by_round_recursive(Hand, RemainingScores),
     append([Score], RemainingScores, Scores).
+    
