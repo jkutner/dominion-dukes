@@ -35,78 +35,78 @@ play(DukesRemaining, DuchiesRemaining, Hand) :-
     play(DukesRemaining, DuchiesRemaining, [], Hand).
 
 best_play(DukesRemaining, DuchiesRemaining) :-
-	findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
-	%write(SetOfHands),nl,
-	max_set(SetOfHands, BestHand),
-	reverse(BestHand, PrintableBestHand),
-	write('Best Hand: '),write(PrintableBestHand),nl,
-	score_by_round(BestHand, Scores),
-	reverse(Scores, PrintableScores),
-	write('Score by Round: '),write(PrintableScores),nl.
-	
+    findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
+    %write(SetOfHands),nl,
+    max_set(SetOfHands, BestHand),
+    reverse(BestHand, PrintableBestHand),
+    write('Best Hand: '),write(PrintableBestHand),nl,
+    score_by_round(BestHand, Scores),
+    reverse(Scores, PrintableScores),
+    write('Score by Round: '),write(PrintableScores),nl.
+    
 max_set(SetOfSets, Set) :-
-	max_set(SetOfSets, 1, Set).
-	
+    max_set(SetOfSets, 1, Set).
+    
 max_set(SetOfSets, _, Set) :-
-	length(SetOfSets, 1), 
-	nth(1, SetOfSets, Set),
-	!.
-		
+    length(SetOfSets, 1), 
+    nth(1, SetOfSets, Set),
+    !.
+        
 max_set(SetOfSets, N, Set) :-
-	max_n(SetOfSets, N, Max), 
-	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
-	M is N+1,
-	max_set(SetOfSetsWithMaxAtN, M, Set).
+    max_n(SetOfSets, N, Max), 
+    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
+    M is N+1,
+    max_set(SetOfSetsWithMaxAtN, M, Set).
 
 max_n([Set|RemainingSets], N, Max) :-
-	length(RemainingSets, 0),
-	nth_score(N, Set, Max), 
-	tail(Set, N, Tail),
-	score(Tail, Max),
-	!.
+    length(RemainingSets, 0),
+    nth_score(N, Set, Max), 
+    tail(Set, N, Tail),
+    score(Tail, Max),
+    !.
 
 max_n([Set|RemainingSets], N, Max) :-
-	max_n(RemainingSets, N, M),
-	nth_score(N, Set, X),
-	X =< M, 
-	Max is M, 
-	!.
-	
+    max_n(RemainingSets, N, M),
+    nth_score(N, Set, X),
+    X =< M, 
+    Max is M, 
+    !.
+    
 max_n([A|_], N, Max) :-
-	%nth(N, A, Max).	 % we can assume A[N] is the new max
-	nth_score(N, A, Max).
-	
+    %nth(N, A, Max).     % we can assume A[N] is the new max
+    nth_score(N, A, Max).
+    
 sets_with_n_of([], _, _, []) :- !.
-	
+    
 sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
-	\+ nth_score(N, A, Max),
-	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN).
-	
+    \+ nth_score(N, A, Max),
+    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN).
+    
 sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
-	nth_score(N, A, Max),
-	sets_with_n_of(SetOfSets, N, Max, R),
-	append([A], R, SetOfSetsWithMaxAtN).
-	
+    nth_score(N, A, Max),
+    sets_with_n_of(SetOfSets, N, Max, R),
+    append([A], R, SetOfSetsWithMaxAtN).
+    
 nth_score(N, Set, Score) :-
-	tail(Set, N, Tail),
-	score(Tail, Score).
-	
+    tail(Set, N, Tail),
+    score(Tail, Score).
+    
 tail(Set, N, Set) :-
-	length(Set, L),
-	L =< N,
-	!.
+    length(Set, L),
+    L =< N,
+    !.
 
-tail([_|R], N, Tail) :-	
-	tail(R, N, Tail).
-	
+tail([_|R], N, Tail) :- 
+    tail(R, N, Tail).
+    
 score_by_round(Hand, Scores) :-
-	score(Hand, Score),
-	score_by_round_recursive(Hand, RemainingScores),
-	append([Score], RemainingScores, Scores).
+    score(Hand, Score),
+    score_by_round_recursive(Hand, RemainingScores),
+    append([Score], RemainingScores, Scores).
 
 score_by_round_recursive([_|[]], []) :- !.
 
 score_by_round_recursive([_|Hand], Scores) :-
-	score(Hand, Score),
-	score_by_round_recursive(Hand, RemainingScores),
-	append([Score], RemainingScores, Scores).
+    score(Hand, Score),
+    score_by_round_recursive(Hand, RemainingScores),
+    append([Score], RemainingScores, Scores).
