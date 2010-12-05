@@ -47,10 +47,7 @@ best_play(DukesRemaining, DuchiesRemaining) :-
 max_set(SetOfSets, Set) :-
     max_set(SetOfSets, 1, Set).
     
-max_set(SetOfSets, _, Set) :-
-    length(SetOfSets, 1), 
-    nth(1, SetOfSets, Set),
-    !.
+max_set([Set|[]], _, Set) :- !.
         
 max_set(SetOfSets, N, Set) :-
     max_n(SetOfSets, N, Max), 
@@ -73,8 +70,7 @@ max_n([Set|RemainingSets], N, Max) :-
     !.
     
 max_n([A|_], N, Max) :-
-    %nth(N, A, Max).     % we can assume A[N] is the new max
-    nth_score(N, A, Max).
+    nth_score(N, A, Max). % if we got this far, then this is the new max
     
 sets_with_n_of([], _, _, []) :- !.
     
