@@ -15,93 +15,85 @@ score([duke|Rest], DukesInHand, DuchiesInHand, Score) :-
 score(Hand, Score) :-
   score(Hand, 0, 0, Score).
 
-play(0, _, Hand, Hand, []) :- !.
-    %score(Hand, Score), !.
+play(0, _, Hand, Hand) :- !.
 
-play(_, 0, Hand, Hand, []) :- !.
-    %score(Hand, Score), !.
+play(_, 0, Hand, Hand) :- !.
 
 % take a duchy
-play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand, Scores) :-
+play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand) :-
     X is DuchiesRemaining-1,
     append([duchy], Hand, NewHand),
-    play(DukesRemaining, X, NewHand, FinishedHand, PostScores),
-	score(NewHand, Score),
-	append(PostScores, [Score], Scores).
+    play(DukesRemaining, X, NewHand, FinishedHand).
 
 % take a duke
-play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand, Scores) :-
+play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand) :-
     X is DukesRemaining-1,
     append([duke], Hand, NewHand),
-    play(X, DuchiesRemaining, NewHand, FinishedHand, PostScores),
-	score(NewHand, Score),
-	append(PostScores, [Score], Scores).
+    play(X, DuchiesRemaining, NewHand, FinishedHand).
 
-play(DukesRemaining, DuchiesRemaining, Hand, Scores) :-
-    play(DukesRemaining, DuchiesRemaining, [], Hand, Scores).
-    
-%high_score(DukesRemaining, DuchiesRemaining, Hand, Scores) :-
-%    setof(Score, play(DukesRemaining, DuchiesRemaining, Hand, Score), Set),
-%    max_list(Set, Score).
-  
-%high_score(8, 8, Hand, Scores).
+play(DukesRemaining, DuchiesRemaining, Hand) :-
+    play(DukesRemaining, DuchiesRemaining, [], Hand).
 
-best_play(DukesRemaining, DuchiesRemaining, Scores) :-
-	findall(Z, play(DukesRemaining, DuchiesRemaining, _, Z), Set),
-	write(Set),
-	do_it(Set, Scores).
+best_play(DukesRemaining, DuchiesRemaining) :-
+	findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
+	%write(SetOfHands),nl,
+	max_set(SetOfHands, BestHand),
+	reverse(BestHand, PrintableBestHand),
+	write('Best Hand: '),write(PrintableBestHand),nl.
+	%score_by_round(PrintableBestHand, Scores)
+	%write('Score by Round: '),write(Scores),nl.
 	
-do_it(SetOfSets, Set) :-
-	do_it(SetOfSets, 1, Set).
+max_set(SetOfSets, Set) :-
+	max_set(SetOfSets, 1, Set).
 	
-do_it(SetOfSets, _, Set) :-
+max_set(SetOfSets, _, Set) :-
 	length(SetOfSets, 1), 
 	nth(1, SetOfSets, Set),
 	!.
 		
-do_it(SetOfSets, N, Set) :-
+max_set(SetOfSets, N, Set) :-
 	max_n(SetOfSets, N, Max), %find the max Nth value of a set in setofsets and call it Max
 	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), %find all sets in setofsets that have Max as the Nth value
 	M is N+1,
-	do_it(SetOfSetsWithMaxAtN, M, Set).
+	max_set(SetOfSetsWithMaxAtN, M, Set).
 
-max_n([A|Set], N, Max) :-
-	length(Set, 0),
-	nth(N, A, Max),
+max_n([Set|RemainingSets], N, Max) :-
+	length(RemainingSets, 0),
+	nth_score(N, Set, Max), 
+	tail(Set, N, Tail),
+	score(Tail, Max),
 	!.
 
-max_n([A|Set], N, Max) :-
-	max_n(Set, N, M),
-	nth(N, A, X),
+max_n([Set|RemainingSets], N, Max) :-
+	max_n(RemainingSets, N, M),
+	nth_score(N, Set, X),
 	X =< M, 
 	Max is M, 
 	!.
 	
 max_n([A|_], N, Max) :-
-	nth(N, A, Max).	 % we can assume A[N] is the new max
+	%nth(N, A, Max).	 % we can assume A[N] is the new max
+	nth_score(N, A, Max).
 	
 sets_with_n_of([], _, _, []) :- !.
 	
 sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
-	\+ nth(N, A, Max),
+	\+ nth_score(N, A, Max),
 	sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN).
 	
 sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
-	nth(N, A, Max),
+	nth_score(N, A, Max),
 	sets_with_n_of(SetOfSets, N, Max, R),
 	append([A], R, SetOfSetsWithMaxAtN).
-		
-elements_that_have_highest_nth_value([A|Rest], Set, N, Result) :-
-	nth(N, A, X),
-	max_n(Set, N, Max),
-	X >= Max,
-	M is N+1,
-	elements_that_have_highest_nth_value(Rest, Set, M, R),
-	append([A], R, Result).
-			
-elements_that_have_highest_nth_value([A|Rest], Set, N, Result) :-
-	nth(N, A, X),
-	max_n(Set, N, Max),
-	X < Max,
-	M is N+1,
-	elements_that_have_highest_nth_value(Rest, Set, M, Result).
+	
+nth_score(N, Set, Score) :-
+	tail(Set, N, Tail),
+	score(Tail, Score).
+	
+tail(Set, N, Set) :-
+	length(Set, L),
+	L =< N,
+	!.
+
+tail([_|R], N, Tail) :-	
+	tail(R, N, Tail).
