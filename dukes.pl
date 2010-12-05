@@ -1,3 +1,4 @@
+%-------- Scoring a hand
 
 % Now that we have gone through all the cards, we can total up the Dukes
 score([], DukesInHand, DuchiesInHand, Score) :-
@@ -14,6 +15,8 @@ score([duke|Rest], DukesInHand, DuchiesInHand, Score) :-
     
 score(Hand, Score) :-
   score(Hand, 0, 0, Score).
+
+%--------- Building up all possible hands
 
 play(0, _, Hand, Hand) :- !.
 
@@ -34,6 +37,8 @@ play(DukesRemaining, DuchiesRemaining, Hand, FinishedHand) :-
 play(DukesRemaining, DuchiesRemaining, Hand) :-
     play(DukesRemaining, DuchiesRemaining, [], Hand).
 
+%---------- Main entry for program
+
 best_play(DukesRemaining, DuchiesRemaining) :-
     findall(Z, play(DukesRemaining, DuchiesRemaining, Z), SetOfHands),
     %write(SetOfHands),nl,
@@ -44,6 +49,8 @@ best_play(DukesRemaining, DuchiesRemaining) :-
     reverse(Scores, PrintableScores),
     write('Score by Round: '),write(PrintableScores),nl.
     
+%---------- The algorithm to find the best ordered hand out of all hands
+
 max_set(SetOfSets, Set) :-
     max_set(SetOfSets, 1, Set).
     
@@ -54,6 +61,8 @@ max_set(SetOfSets, N, Set) :-
     sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN), 
     M is N+1,
     max_set(SetOfSetsWithMaxAtN, M, Set).
+
+%---------- Determine the highest scoring hand at a giving round (n) for the given hands
 
 max_n([Set|RemainingSets], N, Max) :-
     length(RemainingSets, 0),
@@ -72,6 +81,8 @@ max_n([Set|RemainingSets], N, Max) :-
 max_n([A|_], N, Max) :-
     nth_score(N, A, Max). % if we got this far, then this is the new max
     
+%----------- Find all the hands that have a score of Max at round N
+
 sets_with_n_of([], _, _, []) :- !.
     
 sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
@@ -87,6 +98,8 @@ nth_score(N, Set, Score) :-
     tail(Set, N, Tail),
     score(Tail, Score).
     
+%----------- Returns all N elements of a Set after and including the Nth element
+
 tail(Set, N, Set) :-
     length(Set, L),
     L =< N,
@@ -94,6 +107,8 @@ tail(Set, N, Set) :-
 
 tail([_|R], N, Tail) :- 
     tail(R, N, Tail).
+
+%------------ Recursively score each round of a given hand
     
 score_by_round(Hand, Scores) :-
     score(Hand, Score),
