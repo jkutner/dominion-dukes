@@ -63,38 +63,38 @@ max_deck([FirstSet|_], N, FirstSet) :-
 max_deck(SetOfDecks, N, Set) :-
     max_n(SetOfDecks, N, Max), 
     write(N),write(' -> '),write(Max),
-    sets_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN),
+    decks_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN),
     write(', '), length(SetOfDecksWithMaxAtN, L), write(L),nl,
     M is N+1,
     max_deck(SetOfDecksWithMaxAtN, M, Set).
 
 %---------- Determine the highest scoring deck at a giving round (n) for the given decks
 
-max_n([Set|[]], N, Max) :-
-    nth_score(N, Set, Max),
+max_n([Deck|[]], N, Max) :-
+    nth_score(N, Deck, Max),
     !.
 
-max_n([Set|RemainingSets], N, Max) :-
-    max_n(RemainingSets, N, M),
-    nth_score(N, Set, X),
+max_n([Deck|RemainingDecks], N, Max) :-
+    max_n(RemainingDecks, N, M),
+    nth_score(N, Deck, X),
     X =< M, 
     Max is M, 
     !.
     
-max_n([A|_], N, Max) :-
-    nth_score(N, A, Max). % if we got this far, then this is the new max
+max_n([Deck|_], N, Max) :-
+    nth_score(N, Deck, Max). % if we got this far, then this is the new max
     
 %----------- Find all the decks that have a score of Max at round N
 
-sets_with_n_of([], _, _, []) :- !.
+decks_with_n_of([], _, _, []) :- !.
     
-sets_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
+decks_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
     \+ nth_score(N, A, Max),
-    sets_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN).
+    decks_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN).
     
-sets_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
+decks_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
     nth_score(N, A, Max),
-    sets_with_n_of(SetOfDecks, N, Max, R),
+    decks_with_n_of(SetOfDecks, N, Max, R),
     append([A], R, SetOfDecksWithMaxAtN).
     
 %----------- Score a deck at a certain round
