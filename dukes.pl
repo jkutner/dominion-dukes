@@ -51,8 +51,8 @@ best_play(DukesRemaining, DuchiesRemaining) :-
     
 %---------- The algorithm to find the best ordered deck out of all decks
 
-max_deck(SetOfSets, Set) :-
-    max_deck(SetOfSets, 1, Set).
+max_deck(SetOfDecks, Set) :-
+    max_deck(SetOfDecks, 1, Set).
     
 max_deck([Set|[]], _, Set) :- !.
 
@@ -60,13 +60,13 @@ max_deck([FirstSet|_], N, FirstSet) :-
     length(FirstSet, L),
     N > L.
         
-max_deck(SetOfSets, N, Set) :-
-    max_n(SetOfSets, N, Max), 
+max_deck(SetOfDecks, N, Set) :-
+    max_n(SetOfDecks, N, Max), 
     write(N),write(' -> '),write(Max),
-    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN),
-    write(', '), length(SetOfSetsWithMaxAtN, L), write(L),nl,
+    sets_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN),
+    write(', '), length(SetOfDecksWithMaxAtN, L), write(L),nl,
     M is N+1,
-    max_deck(SetOfSetsWithMaxAtN, M, Set).
+    max_deck(SetOfDecksWithMaxAtN, M, Set).
 
 %---------- Determine the highest scoring deck at a giving round (n) for the given decks
 
@@ -88,14 +88,14 @@ max_n([A|_], N, Max) :-
 
 sets_with_n_of([], _, _, []) :- !.
     
-sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
+sets_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
     \+ nth_score(N, A, Max),
-    sets_with_n_of(SetOfSets, N, Max, SetOfSetsWithMaxAtN).
+    sets_with_n_of(SetOfDecks, N, Max, SetOfDecksWithMaxAtN).
     
-sets_with_n_of([A|SetOfSets], N, Max, SetOfSetsWithMaxAtN) :-
+sets_with_n_of([A|SetOfDecks], N, Max, SetOfDecksWithMaxAtN) :-
     nth_score(N, A, Max),
-    sets_with_n_of(SetOfSets, N, Max, R),
-    append([A], R, SetOfSetsWithMaxAtN).
+    sets_with_n_of(SetOfDecks, N, Max, R),
+    append([A], R, SetOfDecksWithMaxAtN).
     
 %----------- Score a deck at a certain round
 
